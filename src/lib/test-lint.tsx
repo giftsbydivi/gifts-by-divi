@@ -10,9 +10,6 @@ const TestComponent = () => {
 
   useEffect(() => {
     console.log('Component mounted');
-
-    // Unused variable
-    const unusedVariable = 'This should be flagged by ESLint';
   }, []);
 
   return (

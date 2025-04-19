@@ -22,8 +22,16 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: 'Gift Shop',
-  description: 'Luxury Gift Shop Application',
+  title: 'Everyday Gift by Divi',
+  description: "Luxury gifts for life's everyday moments",
+  icons: {
+    icon: [
+      {
+        url: '/favicon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

@@ -7,8 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
+    "fix:all": "npm run format:fix && npm run lint:fix",
     "prepare": "husky"
   },
   "dependencies": {

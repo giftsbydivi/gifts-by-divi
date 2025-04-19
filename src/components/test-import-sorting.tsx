@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 
 import Image from 'next/image';
-import
 // This file is just to demonstrate import sorting
 // The actual import order will be fixed when you run the format command
 

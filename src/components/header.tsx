@@ -16,7 +16,7 @@ export function Header() {
     <header className="relative border-b">
       <div className="container mx-auto flex items-center justify-between p-4">
         <Link href="/" className="z-10 font-serif text-xl font-medium md:text-2xl">
-          Exquisite Treasures
+          Everyday Gift <span className="text-neutral-500">by Divi</span>
         </Link>
 
         <nav className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-6 text-sm md:flex">
