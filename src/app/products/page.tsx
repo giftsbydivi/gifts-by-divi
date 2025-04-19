@@ -10,14 +10,6 @@ import { useCart } from '@/lib/providers/cart-provider';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function ProductsContent() {
@@ -64,21 +56,31 @@ function ProductsContent() {
 
       {/* Loading state */}
       {productsQuery.isLoading && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index} className="overflow-hidden">
-              <CardHeader className="p-4">
-                <Skeleton className="mb-2 h-6 w-40" />
-                <Skeleton className="h-4 w-full" />
-              </CardHeader>
-              <CardContent className="p-0">
-                <Skeleton className="h-48 w-full" />
-              </CardContent>
-              <CardFooter className="flex justify-between p-4">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-9 w-24" />
-              </CardFooter>
-            </Card>
+            <div key={index} className="overflow-hidden rounded-xl bg-white shadow-sm">
+              {/* Product Image Skeleton */}
+              <div className="relative h-64 w-full bg-neutral-100">
+                <Skeleton className="h-full w-full" />
+                <div className="absolute top-3 right-3">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+              </div>
+
+              {/* Product Info Skeleton */}
+              <div className="p-5">
+                <Skeleton className="mb-2 h-6 w-3/4" />
+                <Skeleton className="mb-4 h-4 w-full" />
+
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-7 w-20" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                    <Skeleton className="h-9 w-24 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -116,31 +118,70 @@ function ProductsContent() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {productsQuery.data.map((product) => (
-                <Card key={product.id} className="overflow-hidden">
-                  <CardHeader className="p-4">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg">{product.name}</CardTitle>
-                      <Badge variant="outline">{product.category}</Badge>
+                <div
+                  key={product.id}
+                  className="group overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg"
+                >
+                  {/* Product Image */}
+                  <div className="relative h-64 w-full overflow-hidden bg-neutral-100">
+                    <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                      <div className="transition-transform duration-500 group-hover:scale-110">
+                        <p className="text-neutral-400">Product Image</p>
+                      </div>
                     </div>
-                    <CardDescription className="mt-2">{product.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="flex h-48 items-center justify-center bg-neutral-100">
-                      <p className="text-neutral-400">Product Image</p>
+                    <div className="absolute top-3 right-3">
+                      <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
+                        {product.category}
+                      </Badge>
                     </div>
-                  </CardContent>
-                  <CardFooter className="flex items-center justify-between p-4">
-                    <p className="font-medium">${product.price.toFixed(2)}</p>
-                    <div className="flex gap-2">
-                      <Link href={`/products/${product.id}`}>
-                        <Button variant="outline">Details</Button>
-                      </Link>
-                      <Button onClick={() => addToCart(product)}>Add to Cart</Button>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-5">
+                    <h3 className="mb-1 text-lg font-semibold tracking-tight text-neutral-900">
+                      {product.name}
+                    </h3>
+                    <p className="mb-4 line-clamp-2 text-sm text-neutral-500">
+                      {product.description}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold text-neutral-900">
+                        ${product.price.toFixed(2)}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/products/${product.id}`}
+                          className="rounded-full p-2 text-neutral-700 transition-colors hover:bg-neutral-100"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className="h-5 w-5"
+                          >
+                            <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                            <path
+                              fillRule="evenodd"
+                              d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41-.147-.381-.146-.804 0-1.186zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </Link>
+
+                        <Button
+                          onClick={() => addToCart(product)}
+                          className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-neutral-800"
+                        >
+                          Add to Cart
+                        </Button>
+                      </div>
                     </div>
-                  </CardFooter>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -157,21 +198,31 @@ export default function ProductsPage() {
         fallback={
           <div className="container mx-auto">
             <h1 className="mb-4 text-3xl font-medium md:text-4xl">Loading Products...</h1>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardHeader className="p-4">
-                    <Skeleton className="mb-2 h-6 w-40" />
-                    <Skeleton className="h-4 w-full" />
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Skeleton className="h-48 w-full" />
-                  </CardContent>
-                  <CardFooter className="flex justify-between p-4">
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-9 w-24" />
-                  </CardFooter>
-                </Card>
+                <div key={index} className="overflow-hidden rounded-xl bg-white shadow-sm">
+                  {/* Product Image Skeleton */}
+                  <div className="relative h-64 w-full bg-neutral-100">
+                    <Skeleton className="h-full w-full" />
+                    <div className="absolute top-3 right-3">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                  </div>
+
+                  {/* Product Info Skeleton */}
+                  <div className="p-5">
+                    <Skeleton className="mb-2 h-6 w-3/4" />
+                    <Skeleton className="mb-4 h-4 w-full" />
+
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-7 w-20" />
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-9 w-9 rounded-full" />
+                        <Skeleton className="h-9 w-24 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
