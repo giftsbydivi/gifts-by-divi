@@ -23,7 +23,7 @@ export function useProducts() {
 export function useProduct(id: string | undefined) {
   return useQuery({
     queryKey: queryKeys.product(id || ''),
-    queryFn: () => api.getProduct(id || ''),
+    queryFn: () => (id ? api.getProduct(id) : Promise.resolve(undefined)),
     enabled: !!id, // Only run the query if an ID is provided
   });
 }
