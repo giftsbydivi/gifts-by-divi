@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { CartProvider } from '@/lib/providers/cart-provider';
 import { TanstackQueryProvider } from '@/lib/providers/query-provider';
 
+import { SiteFooter } from '@/components/footer';
 import { Header } from '@/components/header';
 import './globals.css';
 
@@ -46,6 +47,7 @@ export default function RootLayout({
           <CartProvider>
             <Header />
             {children}
+            <SiteFooter />
             <Toaster position="top-right" closeButton />
           </CartProvider>
         </TanstackQueryProvider>

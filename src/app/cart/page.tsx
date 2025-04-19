@@ -19,16 +19,18 @@ export default function CartPage() {
   return (
     <main className="min-h-screen p-8">
       <div className="container mx-auto max-w-4xl">
-        <h1 className="mb-6 text-3xl font-medium md:text-4xl">Your Shopping Cart</h1>
+        <h1 className="mb-6 text-3xl font-semibold text-neutral-900 md:text-4xl">
+          Your Shopping Cart
+        </h1>
 
         {items.length === 0 ? (
           <Card className="p-8 text-center">
-            <CardTitle className="mb-2">Your cart is empty</CardTitle>
-            <CardDescription className="mb-6">
+            <CardTitle className="mb-2 text-neutral-900">Your cart is empty</CardTitle>
+            <CardDescription className="mb-6 text-neutral-700">
               Looks like you haven&apos;t added any items to your cart yet.
             </CardDescription>
             <Link href="/products">
-              <Button>Browse Products</Button>
+              <Button className="bg-rose-700 text-white hover:bg-rose-800">Browse Products</Button>
             </Link>
           </Card>
         ) : (
@@ -116,16 +118,16 @@ export default function CartPage() {
               ))}
             </div>
 
-            <div className="rounded-lg bg-neutral-50 p-6">
+            <div className="rounded-lg bg-rose-50/50 p-6">
               <div className="mb-2 flex justify-between">
                 <span>Subtotal</span>
                 <span>${totalPrice.toFixed(2)}</span>
               </div>
-              <div className="mb-2 flex justify-between text-sm text-neutral-600">
+              <div className="mb-2 flex justify-between text-sm text-neutral-700">
                 <span>Shipping</span>
                 <span>Calculated at checkout</span>
               </div>
-              <div className="mb-2 flex justify-between text-sm text-neutral-600">
+              <div className="mb-2 flex justify-between text-sm text-neutral-700">
                 <span>Tax</span>
                 <span>Calculated at checkout</span>
               </div>
@@ -134,7 +136,7 @@ export default function CartPage() {
                 <span className="text-lg font-medium">Total</span>
                 <span className="text-lg font-medium">${totalPrice.toFixed(2)}</span>
               </div>
-              <Button className="w-full" size="lg">
+              <Button className="w-full bg-rose-700 text-white hover:bg-rose-800" size="lg">
                 Proceed to Checkout
               </Button>
             </div>
