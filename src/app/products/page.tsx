@@ -1,5 +1,7 @@
 'use client';
 
+import { Suspense } from 'react';
+
 import { ProductsContent } from '@/components/products';
 import { ProductsHero } from '@/components/products/hero';
 
@@ -10,7 +12,13 @@ export default function ProductsPage() {
       <ProductsHero />
 
       {/* Products Section */}
-      <ProductsContent />
+      <Suspense
+        fallback={
+          <div className="container mx-auto px-4 py-16 text-center">Loading products...</div>
+        }
+      >
+        <ProductsContent />
+      </Suspense>
     </main>
   );
 }
