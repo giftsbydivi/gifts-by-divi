@@ -41,19 +41,19 @@ export default function ContactPage() {
     setError('');
 
     try {
-      const response = await fetch('https://formsubmit.co/ajax/giftsbydivi@gmail.com', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json',
         },
         body: JSON.stringify({
           name: formData.name,
           phone: formData.phone,
           message: formData.message,
-          _captcha: false,
         }),
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         setIsSubmitted(true);
@@ -63,8 +63,7 @@ export default function ContactPage() {
           message: '',
         });
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong!');
+        throw new Error(data.error || 'Something went wrong!');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit form');
