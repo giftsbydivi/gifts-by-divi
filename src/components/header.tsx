@@ -23,7 +23,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b bg-white">
       <div className="container mx-auto flex items-center justify-between p-4">
         <Link href="/" className="z-10 font-serif text-xl font-medium md:text-2xl">
-          Everyday Gift <span className="text-neutral-500">by Divi</span>
+          Gifts <span className="text-neutral-500">by Divi</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -125,8 +125,8 @@ export function Header() {
               <p className="text-xs text-neutral-600">
                 Have questions about our products? <br />
                 Email us at{' '}
-                <a href="mailto:hello@everydaygift.com" className="text-rose-700">
-                  hello@everydaygift.com
+                <a href="mailto:giftsbydivi@gmail.com" className="text-rose-700">
+                  giftsbydivi@gmail.com
                 </a>
               </p>
             </div>

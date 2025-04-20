@@ -30,7 +30,7 @@ export function Hero() {
             transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1.0] }}
             className="mb-4 text-4xl font-medium text-white md:text-6xl"
           >
-            Everyday Gift
+            Gifts by Divi
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}

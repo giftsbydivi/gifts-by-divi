@@ -23,7 +23,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: 'Everyday Gift by Divi',
+  title: 'Gifts by Divi',
   description: "Luxury gifts for life's everyday moments",
   icons: {
     icon: [

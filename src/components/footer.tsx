@@ -9,7 +9,7 @@ export function SiteFooter() {
         <FadeInWhenVisible>
           {/* Logo and name */}
           <div className="mb-8 flex flex-col items-center">
-            <h2 className="text-2xl font-medium text-neutral-900">Everyday Gift</h2>
+            <h2 className="text-2xl font-medium text-neutral-900">Gifts by Divi</h2>
             <div className="mt-2 h-1 w-16 rounded-full bg-rose-200"></div>
           </div>
 
@@ -118,7 +118,7 @@ export function SiteFooter() {
             </div>
             <div className="h-px w-24 bg-neutral-200"></div>
             <p className="mt-6 text-xs text-neutral-500">
-              &copy; {new Date().getFullYear()} Everyday Gift. All rights reserved.
+              &copy; {new Date().getFullYear()} Gifts by Divi. All rights reserved.
             </p>
           </div>
         </FadeInWhenVisible>
