@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 import Image from 'next/image';
 
@@ -20,46 +20,6 @@ export function ProductGallery({ media }: ProductGalleryProps) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Start auto-rotation when component mounts
-  useEffect(() => {
-    if (sortedMedia.length > 1) {
-      intervalRef.current = setInterval(() => {
-        setActiveIndex((current) => (current + 1) % sortedMedia.length);
-      }, 7000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [sortedMedia.length]);
-
-  // Reset auto-rotation when active index changes
-  useEffect(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    if (sortedMedia.length > 1) {
-      intervalRef.current = setInterval(() => {
-        setActiveIndex((current) => (current + 1) % sortedMedia.length);
-      }, 7000);
-    }
-
-    // Play video when it's active
-    if (sortedMedia[activeIndex]?.type === 'video' && videoRef.current) {
-      videoRef.current.play().catch((error) => console.error('Error playing video:', error));
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [activeIndex, sortedMedia]);
 
   // Function to render the appropriate media based on type
   const renderMedia = (item: MediaItem) => {
@@ -134,6 +94,12 @@ export function ProductGallery({ media }: ProductGalleryProps) {
               }`}
               onClick={() => {
                 setActiveIndex(index);
+                // Play video automatically when selected
+                if (item.type === 'video' && videoRef.current && index === activeIndex) {
+                  videoRef.current
+                    .play()
+                    .catch((error) => console.error('Error playing video:', error));
+                }
               }}
             >
               {item.type === 'image' ? (
