@@ -34,9 +34,6 @@ export function Header() {
           <Link href="/products" className="text-neutral-900 hover:text-rose-700">
             Products
           </Link>
-          <Link href="/featured-gifts" className="text-neutral-900 hover:text-rose-700">
-            Featured Gifts
-          </Link>
           <Link href="/about" className="text-neutral-900 hover:text-rose-700">
             About Us
           </Link>
