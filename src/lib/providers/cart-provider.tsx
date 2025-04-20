@@ -23,7 +23,8 @@ export function CartProvider({ children }: PropsWithChildren) {
 
   // Enhanced add to cart that shows a toast notification
   const addToCart = (product: Product, quantity = 1) => {
-    addItem(product, quantity);
+    // Only passing the product ID to the store instead of the entire product
+    addItem(product.id, quantity);
     toast.success(`Added to Cart`, {
       description: `${quantity} × ${product.name}`,
       action: {

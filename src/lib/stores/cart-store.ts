@@ -1,20 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { Product } from '@/lib/services/api';
-
 export interface CartItem {
-  product: Product;
+  productId: string;
   quantity: number;
 }
 
 interface CartState {
   items: CartItem[];
   totalItems: number;
-  totalPrice: number;
 
   // Actions
-  addItem: (product: Product, quantity?: number) => void;
+  addItem: (productId: string, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -25,45 +22,36 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       totalItems: 0,
-      totalPrice: 0,
 
-      addItem: (product: Product, quantity = 1) => {
+      addItem: (productId: string, quantity = 1) => {
         const { items } = get();
-        const existingItem = items.find((item) => item.product.id === product.id);
+        const existingItem = items.find((item) => item.productId === productId);
 
         let updatedItems;
         if (existingItem) {
           // If item already exists, update quantity
           updatedItems = items.map((item) =>
-            item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+            item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item
           );
         } else {
           // Otherwise add new item
-          updatedItems = [...items, { product, quantity }];
+          updatedItems = [...items, { productId, quantity }];
         }
 
-        // Calculate totals
+        // Calculate total items
         const totalItems = updatedItems.reduce((total, item) => total + item.quantity, 0);
-        const totalPrice = updatedItems.reduce(
-          (total, item) => total + item.product.price * item.quantity,
-          0
-        );
 
-        set({ items: updatedItems, totalItems, totalPrice });
+        set({ items: updatedItems, totalItems });
       },
 
       removeItem: (productId: string) => {
         const { items } = get();
-        const updatedItems = items.filter((item) => item.product.id !== productId);
+        const updatedItems = items.filter((item) => item.productId !== productId);
 
-        // Calculate totals
+        // Calculate total items
         const totalItems = updatedItems.reduce((total, item) => total + item.quantity, 0);
-        const totalPrice = updatedItems.reduce(
-          (total, item) => total + item.product.price * item.quantity,
-          0
-        );
 
-        set({ items: updatedItems, totalItems, totalPrice });
+        set({ items: updatedItems, totalItems });
       },
 
       updateQuantity: (productId: string, quantity: number) => {
@@ -73,21 +61,17 @@ export const useCartStore = create<CartState>()(
         const safeQuantity = Math.max(1, quantity);
 
         const updatedItems = items.map((item) =>
-          item.product.id === productId ? { ...item, quantity: safeQuantity } : item
+          item.productId === productId ? { ...item, quantity: safeQuantity } : item
         );
 
-        // Calculate totals
+        // Calculate total items
         const totalItems = updatedItems.reduce((total, item) => total + item.quantity, 0);
-        const totalPrice = updatedItems.reduce(
-          (total, item) => total + item.product.price * item.quantity,
-          0
-        );
 
-        set({ items: updatedItems, totalItems, totalPrice });
+        set({ items: updatedItems, totalItems });
       },
 
       clearCart: () => {
-        set({ items: [], totalItems: 0, totalPrice: 0 });
+        set({ items: [], totalItems: 0 });
       },
     }),
     {

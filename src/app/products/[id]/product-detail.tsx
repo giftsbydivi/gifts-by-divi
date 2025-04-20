@@ -10,6 +10,7 @@ import { useProduct } from '@/lib/hooks/use-products';
 import { useCart } from '@/lib/providers/cart-provider';
 
 import { FadeInWhenVisible } from '@/components/animations/fade-in';
+import { ProductGallery } from '@/components/products/product-gallery';
 import { SimilarProducts } from '@/components/products/similar-products';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,27 @@ export default function ProductDetail({ id }: { id: string }) {
         {/* Loading state */}
         {productQuery.isLoading && (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <Skeleton className="h-[400px] rounded-lg" />
+            <div className="flex flex-col gap-4">
+              {/* Main image skeleton */}
+              <Skeleton className="h-[300px] w-full rounded-lg md:h-[400px]" />
+
+              {/* Thumbnail row skeleton - horizontal on mobile */}
+              <div className="flex gap-2 overflow-x-auto pb-2 md:hidden">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-16 w-16 flex-shrink-0 rounded" />
+                ))}
+              </div>
+
+              {/* Thumbnail column skeleton - vertical on desktop, hidden on mobile */}
+              <div className="hidden md:grid md:grid-cols-[80px_1fr] md:gap-4">
+                <div className="flex flex-col gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-16 w-16 rounded" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div>
               <Skeleton className="mb-2 h-6 w-24" />
               <Skeleton className="mb-2 h-10 w-3/4" />
@@ -79,14 +100,12 @@ export default function ProductDetail({ id }: { id: string }) {
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <FadeInWhenVisible>
-                <div className="flex h-[400px] items-center justify-center rounded-lg bg-neutral-100">
-                  <p className="text-neutral-400">Product Image</p>
-                </div>
+                <ProductGallery media={productQuery.data.media} />
               </FadeInWhenVisible>
 
               <div>
                 <FadeInWhenVisible delay={0.1}>
-                  <div className="mb-2 flex items-center gap-2">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
                     <Badge
                       variant="outline"
                       className="border-green-200 bg-green-50 text-green-700"
@@ -94,6 +113,32 @@ export default function ProductDetail({ id }: { id: string }) {
                       {productQuery.data.category}
                     </Badge>
                     <Badge variant="outline">In Stock</Badge>
+
+                    {productQuery.data.isFeatured && (
+                      <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                        Featured
+                      </Badge>
+                    )}
+
+                    {productQuery.data.isTrending && (
+                      <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
+                        <span className="flex items-center gap-1">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className="h-3.5 w-3.5"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Trending
+                        </span>
+                      </Badge>
+                    )}
                   </div>
 
                   <h1 className="mb-2 text-3xl font-bold">{productQuery.data.name}</h1>

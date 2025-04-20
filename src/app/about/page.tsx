@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { motion } from 'framer-motion';
@@ -57,7 +58,12 @@ export default function AboutPage() {
                 <div className="h-full">
                   <div className="relative h-full overflow-hidden rounded-xl bg-neutral-100 shadow-md">
                     <div className="flex h-full min-h-[400px] items-center justify-center">
-                      <p className="text-neutral-400">Founder Image</p>
+                      <Image
+                        src="https://ik.imagekit.io/giftsbydivi/Website%20Images/giftsbydivi.jpeg?updatedAt=1745142319690"
+                        alt="Divi - Founder of Gifts by Divi"
+                        fill
+                        className="object-cover"
+                      />
                     </div>
                   </div>
                   <p className="font-playfair mt-6 text-lg text-rose-700 italic">

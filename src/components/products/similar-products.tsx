@@ -65,23 +65,73 @@ export function SimilarProducts({ currentProductId, category }: SimilarProductsP
 function ProductCard({ product }: { product: Product }) {
   return (
     <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
-      <Link href={`/products/${product.id}`}>
-        <Card className="overflow-hidden transition-shadow hover:shadow-md">
-          <div className="flex h-48 items-center justify-center bg-neutral-100">
-            <p className="text-sm text-neutral-400">Product Image</p>
-          </div>
-          <div className="p-4">
-            <div className="mb-2">
-              <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
-                {product.category}
-              </Badge>
+      <Card className="relative cursor-pointer overflow-hidden !p-0 transition-shadow hover:shadow-md">
+        <Link
+          href={`/products/${product.id}`}
+          className="absolute inset-0 z-10"
+          aria-label={`View details for ${product.name}`}
+        />
+        <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
+          {product.media && product.media.length > 0 ? (
+            <div className="h-full w-full">
+              <img
+                src={product.media[0].url}
+                alt={product.name}
+                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+              />
             </div>
-            <h3 className="mb-1 font-medium">{product.name}</h3>
-            <p className="mb-2 line-clamp-2 text-sm text-neutral-600">{product.description}</p>
-            <p className="font-semibold text-neutral-900">${product.price.toFixed(2)}</p>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <p className="text-sm text-neutral-400">Product Image</p>
+            </div>
+          )}
+
+          {/* Featured & Trending badges - top left */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            {product.isFeatured && (
+              <Badge
+                variant="outline"
+                className="border-blue-200 bg-blue-50/90 text-blue-700 backdrop-blur-sm"
+              >
+                Featured
+              </Badge>
+            )}
+
+            {product.isTrending && (
+              <Badge
+                variant="outline"
+                className="border-rose-200 bg-rose-50/90 text-rose-700 backdrop-blur-sm"
+              >
+                <span className="flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="h-3.5 w-3.5"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Trending
+                </span>
+              </Badge>
+            )}
           </div>
-        </Card>
-      </Link>
+        </div>
+        <div className="p-4">
+          <div className="mb-2">
+            <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+              {product.category}
+            </Badge>
+          </div>
+          <h3 className="mb-1 font-medium">{product.name}</h3>
+          <p className="mb-2 line-clamp-2 text-sm text-neutral-600">{product.description}</p>
+          <p className="font-semibold text-neutral-900">${product.price.toFixed(2)}</p>
+        </div>
+      </Card>
     </motion.div>
   );
 }
