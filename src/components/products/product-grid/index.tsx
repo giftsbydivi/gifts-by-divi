@@ -92,7 +92,7 @@ export function ProductGrid({ productsQuery, category }: ProductGridProps) {
               staggerDelay={0.08}
             >
               {productsQuery.data.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product._id} product={product} />
               ))}
             </StaggerChildren>
           )}

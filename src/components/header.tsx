@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import Link from 'next/link';
 
@@ -8,12 +8,19 @@ import { ShoppingCart, Menu, X } from 'lucide-react';
 
 import { useCartStore } from '@/lib/stores/cart-store';
 
+import { MiniCart } from '@/components/cart/mini-cart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export function Header() {
-  const { totalItems } = useCartStore();
+  const cartStore = useCartStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showMiniCart, setShowMiniCart] = useState(false);
+
+  // Calculate total items count
+  const totalItems = useMemo(() => {
+    return cartStore.getTotalItemsCount();
+  }, [cartStore]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -43,20 +50,37 @@ export function Header() {
         </nav>
 
         <div className="z-10 flex items-center gap-2">
-          {/* Cart Link - Always Visible */}
-          <Link href="/cart">
-            <Button variant="ghost" size="icon" className="relative">
+          {/* Cart Button with Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setShowMiniCart(true)}
+            onMouseLeave={() => setShowMiniCart(false)}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative"
+              onClick={() => setShowMiniCart(!showMiniCart)} // For mobile touch
+            >
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (
                 <Badge
-                  className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center bg-rose-700 p-0 text-xs text-white"
+                  className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-rose-700 p-0 text-xs text-white"
                   variant="outline"
                 >
                   {totalItems}
                 </Badge>
               )}
             </Button>
-          </Link>
+
+            {/* Mini Cart Dropdown */}
+            {showMiniCart && (
+              <div className="absolute top-full right-0 z-50 mt-2 rounded-md border border-neutral-200 bg-white shadow-lg">
+                <div className="absolute -top-2 right-4 h-4 w-4 rotate-45 border-t border-l border-neutral-200 bg-white"></div>
+                <MiniCart onClose={() => setShowMiniCart(false)} />
+              </div>
+            )}
+          </div>
 
           {/* Mobile Menu Toggle */}
           <Button

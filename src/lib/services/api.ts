@@ -1,183 +1,234 @@
-// Types
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { SanityImageSource } from '@sanity/image-url/lib/types/types';
+import { groq } from 'next-sanity';
+
+import { client, urlForImage } from '../../../sanity/lib/client';
+
 export interface MediaItem {
-  type: 'image' | 'video' | 'instagram';
   url: string;
-  thumbnail?: string; // For video thumbnails
-  embedUrl?: string; // For Instagram embeds
+  type: 'image' | 'video' | 'instagram';
+  thumbnail?: string;
+  embedUrl?: string;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  slug: {
+    current: string;
+  };
+  description?: string;
+  image?: SanityImageSource;
+  imageUrl?: string;
 }
 
 export interface Product {
-  id: string;
+  _id: string;
   name: string;
-  description: string;
+  slug: {
+    current: string;
+  };
+  description?: any;
   price: number;
-  media: MediaItem[];
-  category: string;
-  isFeatured: boolean; // Marks featured products
-  isTrending: boolean; // Marks trending products
+  compareAtPrice?: number;
+  images: MediaItem[];
+  categories: Category[];
+  featured: boolean;
+  inStock: boolean;
+  tags?: string[];
 }
 
-// Mock data - In a real app, this would come from an actual API
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Luxury Scented Candle Set',
-    description: 'Set of 3 premium scented candles with natural soy wax and essential oils.',
-    price: 49.99,
-    media: [
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1608263153703-caa6b0fd7bc7?q=80&w=2002&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'instagram',
-        url: 'https://www.instagram.com/reel/DIYzC08My2Q/',
-        embedUrl: 'https://www.instagram.com/reel/DIYzC08My2Q/embed',
-        thumbnail:
-          'https://images.unsplash.com/photo-1608263153703-caa6b0fd7bc7?q=80&w=2002&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1582131503261-fca1d1c0589f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1628428988968-5549dd02dde2?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-    ],
-    category: 'Home Decor',
-    isFeatured: true,
-    isTrending: true,
-  },
-  {
-    id: '2',
-    name: 'Artisanal Chocolate Collection',
-    description: 'Handcrafted chocolates made with premium ingredients from around the world.',
-    price: 34.99,
-    media: [
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1628428988968-5549dd02dde2?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-    ],
-    category: 'Gourmet',
-    isFeatured: true,
-    isTrending: false,
-  },
-  {
-    id: '3',
-    name: 'Personalized Leather Journal',
-    description: 'Genuine leather journal with custom monogram and high-quality paper.',
-    price: 29.99,
-    media: [
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1582131503261-fca1d1c0589f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1608263153703-caa6b0fd7bc7?q=80&w=2002&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-    ],
-    category: 'Personalized',
-    isFeatured: true,
-    isTrending: false,
-  },
-  {
-    id: '4',
-    name: 'Crystal Wine Decanter',
-    description: 'Elegant handblown crystal wine decanter for wine enthusiasts.',
-    price: 89.99,
-    media: [
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1608263153703-caa6b0fd7bc7?q=80&w=2002&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1628428988968-5549dd02dde2?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-    ],
-    category: 'Home Decor',
-    isFeatured: false,
-    isTrending: true,
-  },
-  {
-    id: '5',
-    name: 'Luxury Gift Hamper',
-    description: 'Curated luxury gift basket with gourmet treats, wine and premium accessories.',
-    price: 129.99,
-    media: [
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1582131503261-fca1d1c0589f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1608263153703-caa6b0fd7bc7?q=80&w=2002&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1628428988968-5549dd02dde2?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-    ],
-    category: 'Gourmet',
-    isFeatured: false,
-    isTrending: true,
-  },
-  {
-    id: '6',
-    name: 'Handcrafted Ceramic Vase Set',
-    description: 'Set of 3 artisanal ceramic vases in complementary colors and designs.',
-    price: 79.99,
-    media: [
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1628428988968-5549dd02dde2?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-      {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1582131503261-fca1d1c0589f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      },
-    ],
-    category: 'Home Decor',
-    isFeatured: false,
-    isTrending: false,
-  },
-];
+interface SanityImageData {
+  url: string;
+  type: string;
+  thumbnail?: string;
+}
 
-// API client functions
+// Get all categories
+export async function getCategories(): Promise<Category[]> {
+  const categories = await client.fetch(
+    groq`*[_type == "category"] {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      image
+    }`
+  );
+
+  return categories.map((category: Record<string, unknown>) => ({
+    ...category,
+    slug: { current: category.slug },
+    imageUrl: category.image ? urlForImage(category.image).url() : null,
+  }));
+}
+
+// Get category by slug
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  const category = await client.fetch(
+    groq`*[_type == "category" && slug.current == $slug][0] {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      image
+    }`,
+    { slug }
+  );
+
+  if (!category) return null;
+
+  return {
+    ...category,
+    slug: { current: category.slug },
+    imageUrl: category.image ? urlForImage(category.image).url() : null,
+  };
+}
+
+// Get all products
+export async function getProducts(): Promise<Product[]> {
+  const products = await client.fetch(
+    groq`*[_type == "product"] {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      price,
+      compareAtPrice,
+      "images": images[] {
+        "url": url.asset->url,
+        "type": type,
+        "thumbnail": url.asset->url
+      },
+      "categories": categories[]->{ _id, name, "slug": slug.current },
+      featured,
+      inStock,
+      tags
+    }`
+  );
+
+  return products.map((product: Record<string, any>) => ({
+    ...product,
+    slug: { current: product.slug },
+    images: mapMediaItems(product.images || []),
+  }));
+}
+
+// Get product by slug
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const product = await client.fetch(
+    groq`*[_type == "product" && slug.current == $slug][0] {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      price,
+      compareAtPrice,
+      "images": images[] {
+        "url": url.asset->url,
+        "type": type,
+        "thumbnail": url.asset->url
+      },
+      "categories": categories[]->{ _id, name, "slug": slug.current },
+      featured,
+      inStock,
+      tags
+    }`,
+    { slug }
+  );
+
+  if (!product) return null;
+
+  return {
+    ...product,
+    slug: { current: product.slug },
+    images: mapMediaItems(product.images || []),
+  };
+}
+
+// Get featured products
+export async function getFeaturedProducts(): Promise<Product[]> {
+  const products = await client.fetch(
+    groq`*[_type == "product" && featured == true] {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      price,
+      compareAtPrice,
+      "images": images[] {
+        "url": url.asset->url,
+        "type": type,
+        "thumbnail": url.asset->url
+      },
+      "categories": categories[]->{ _id, name, "slug": slug.current },
+      featured,
+      inStock,
+      tags
+    }`
+  );
+
+  return products.map((product: Record<string, any>) => ({
+    ...product,
+    slug: { current: product.slug },
+    images: mapMediaItems(product.images || []),
+  }));
+}
+
+// Get products by category
+export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
+  const products = await client.fetch(
+    groq`*[_type == "product" && $categorySlug in categories[]->slug.current] {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      price,
+      compareAtPrice,
+      "images": images[] {
+        "url": url.asset->url,
+        "type": type,
+        "thumbnail": url.asset->url
+      },
+      "categories": categories[]->{ _id, name, "slug": slug.current },
+      featured,
+      inStock,
+      tags
+    }`,
+    { categorySlug }
+  );
+
+  return products.map((product: Record<string, any>) => ({
+    ...product,
+    slug: { current: product.slug },
+    images: mapMediaItems(product.images || []),
+  }));
+}
+
+// Helper function to map media items from Sanity format
+function mapMediaItems(items: SanityImageData[]): MediaItem[] {
+  if (!items || !Array.isArray(items)) return [];
+
+  return items.map((item) => {
+    const mediaItem: MediaItem = {
+      url: item.url,
+      type: (item.type || 'image') as MediaItem['type'],
+    };
+
+    if (item.thumbnail) {
+      mediaItem.thumbnail = item.thumbnail;
+    }
+
+    return mediaItem;
+  });
+}
+
 export const api = {
-  // Simulate API fetching with a delay
-  async getProducts(): Promise<Product[]> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    return mockProducts;
-  },
-
-  async getProduct(id: string): Promise<Product | undefined> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return mockProducts.find((product) => product.id === id);
-  },
-
-  async getProductsByCategory(category: string): Promise<Product[]> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    return mockProducts.filter((product) => product.category === category);
-  },
-
-  // Function to get featured products
-  async getFeaturedProducts(): Promise<Product[]> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    return mockProducts.filter((product) => product.isFeatured);
-  },
-
-  // Function to get trending products
-  async getTrendingProducts(): Promise<Product[]> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    return mockProducts.filter((product) => product.isTrending);
-  },
+  getCategories,
+  getCategoryBySlug,
+  getProducts,
+  getProductBySlug,
+  getFeaturedProducts,
+  getProductsByCategory,
+  getProduct: getProductBySlug,
 };

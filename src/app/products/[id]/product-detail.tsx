@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import Link from 'next/link';
 
+import { PortableText } from '@portabletext/react';
 import { motion } from 'framer-motion';
 
 import { useProduct } from '@/lib/hooks/use-products';
@@ -100,27 +101,31 @@ export default function ProductDetail({ id }: { id: string }) {
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <FadeInWhenVisible>
-                <ProductGallery media={productQuery.data.media} />
+                <ProductGallery media={productQuery.data.images || []} />
               </FadeInWhenVisible>
 
               <div>
                 <FadeInWhenVisible delay={0.1}>
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="border-green-200 bg-green-50 text-green-700"
-                    >
-                      {productQuery.data.category}
+                    {productQuery.data.categories && productQuery.data.categories.length > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="border-green-200 bg-green-50 text-green-700"
+                      >
+                        {productQuery.data.categories[0].name}
+                      </Badge>
+                    )}
+                    <Badge variant="outline">
+                      {productQuery.data.inStock ? 'In Stock' : 'Out of Stock'}
                     </Badge>
-                    <Badge variant="outline">In Stock</Badge>
 
-                    {productQuery.data.isFeatured && (
+                    {productQuery.data.featured && (
                       <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
                         Featured
                       </Badge>
                     )}
 
-                    {productQuery.data.isTrending && (
+                    {productQuery.data.tags?.includes('trending') && (
                       <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
                         <span className="flex items-center gap-1">
                           <svg
@@ -144,8 +149,19 @@ export default function ProductDetail({ id }: { id: string }) {
                   <h1 className="mb-2 text-3xl font-bold">{productQuery.data.name}</h1>
                   <p className="mb-4 text-2xl font-semibold">
                     ${productQuery.data.price.toFixed(2)}
+                    {productQuery.data.compareAtPrice && (
+                      <span className="ml-2 text-sm text-gray-500 line-through">
+                        ${productQuery.data.compareAtPrice.toFixed(2)}
+                      </span>
+                    )}
                   </p>
-                  <p className="mb-6 text-neutral-600">{productQuery.data.description}</p>
+                  <div className="mb-6 text-neutral-600">
+                    {typeof productQuery.data.description === 'string' ? (
+                      <p>{productQuery.data.description}</p>
+                    ) : (
+                      <PortableText value={productQuery.data.description} />
+                    )}
+                  </div>
                 </FadeInWhenVisible>
 
                 <FadeInWhenVisible delay={0.2}>
@@ -192,34 +208,33 @@ export default function ProductDetail({ id }: { id: string }) {
                   <div>
                     <h2 className="mb-2 text-lg font-semibold">Product Details:</h2>
                     <ul className="list-disc space-y-1 pl-5 text-neutral-600">
-                      <motion.li
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.4 }}
-                      >
-                        Premium quality materials
-                      </motion.li>
-                      <motion.li
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.5 }}
-                      >
-                        Elegant design for any occasion
-                      </motion.li>
-                      <motion.li
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.6 }}
-                      >
-                        Makes a perfect gift
-                      </motion.li>
-                      <motion.li
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.7 }}
-                      >
-                        Free gift wrapping available
-                      </motion.li>
+                      {productQuery.data.tags?.map((tag, index) => (
+                        <motion.li
+                          key={tag}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
+                        >
+                          {tag}
+                        </motion.li>
+                      )) || (
+                        <>
+                          <motion.li
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: 0.4 }}
+                          >
+                            Premium quality materials
+                          </motion.li>
+                          <motion.li
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: 0.5 }}
+                          >
+                            Elegant design for any occasion
+                          </motion.li>
+                        </>
+                      )}
                     </ul>
                   </div>
                 </FadeInWhenVisible>
@@ -227,7 +242,10 @@ export default function ProductDetail({ id }: { id: string }) {
             </div>
 
             {/* Similar Products Section */}
-            <SimilarProducts currentProductId={id} category={productQuery.data.category} />
+            <SimilarProducts
+              currentProductId={id}
+              category={productQuery.data.categories?.[0]?.slug?.current || ''}
+            />
           </>
         )}
       </div>

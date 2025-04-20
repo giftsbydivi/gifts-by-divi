@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 
 import Link from 'next/link';
 
 import { motion } from 'framer-motion';
 
+import { useFeaturedProducts } from '@/lib/hooks/use-products';
 import { useCart } from '@/lib/providers/cart-provider';
-import { api, Product } from '@/lib/services/api';
+import { Product } from '@/lib/services/api';
 
 import { FadeInWhenVisible } from '@/components/animations/fade-in';
 import { Badge } from '@/components/ui/badge';
@@ -17,27 +18,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 export function FeaturedProducts() {
   const { addToCart } = useCart();
   const carouselRef = useRef<HTMLDivElement>(null);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchFeaturedProducts = async () => {
-      try {
-        setIsLoading(true);
-        const products = await api.getFeaturedProducts();
-        setFeaturedProducts(products);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching featured products:', err);
-        setError('Failed to load featured products');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFeaturedProducts();
-  }, []);
+  // Use React Query hook to fetch featured products
+  const { data: featuredProducts = [], isLoading, error } = useFeaturedProducts();
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (!carouselRef.current) return;
@@ -65,7 +48,7 @@ export function FeaturedProducts() {
   // Function to render product cards
   const renderProductCard = (product: Product, isDuplicate = false) => (
     <motion.div
-      key={isDuplicate ? `${product.id}-dup` : product.id}
+      key={isDuplicate ? `${product._id}-dup` : product._id}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -75,40 +58,88 @@ export function FeaturedProducts() {
       className="group relative max-w-[280px] min-w-[280px] flex-shrink-0 cursor-pointer snap-start overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl sm:max-w-[320px] sm:min-w-[320px] md:max-w-[300px] md:min-w-[300px]"
     >
       <Link
-        href={`/products/${product.id}`}
+        href={`/products/${product.slug.current}`}
         className="absolute inset-0 z-10"
         aria-label={`View details for ${product.name}`}
       />
       {/* Product Image */}
-      <div className="relative h-[200px] w-full overflow-hidden bg-neutral-100">
-        {product.media && product.media.length > 0 ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.media[0].url}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-          />
+      <div className="relative h-[200px] w-full overflow-hidden rounded-t-lg bg-neutral-100">
+        {product.images && product.images.length > 0 ? (
+          <div className="h-full w-full overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.images[0].url}
+              alt={product.name}
+              className="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+            />
+          </div>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-            <div className="transition-transform duration-500 group-hover:scale-110">
-              <p className="text-neutral-400">Product Image</p>
-            </div>
+          <div className="flex h-full w-full items-center justify-center">
+            <p className="text-neutral-400">Product Image</p>
           </div>
         )}
-        <div className="absolute top-3 right-3">
-          <Badge variant="outline" className="bg-white/90 px-2 py-0.5 text-xs backdrop-blur-sm">
-            {product.category}
-          </Badge>
+
+        {/* Category badge - positioned absolutely over the image */}
+        <div className="absolute top-3 right-3 z-20">
+          {product.categories && product.categories.length > 0 && (
+            <Badge variant="outline" className="bg-white/90 px-2 py-0.5 text-xs backdrop-blur-sm">
+              {product.categories[0].name}
+            </Badge>
+          )}
+        </div>
+
+        {/*  Trending badges - top left */}
+        <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+          {product.tags?.includes('trending') && (
+            <Badge
+              variant="outline"
+              className="border-rose-200 bg-rose-50/90 text-rose-700 backdrop-blur-sm"
+            >
+              <span className="flex items-center gap-1">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-3.5 w-3.5"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Trending
+              </span>
+            </Badge>
+          )}
         </div>
       </div>
 
       {/* Product Info */}
       <div className="p-5">
         <h3 className="text-lg font-medium text-neutral-900">{product.name}</h3>
-        <p className="mt-1 line-clamp-2 text-sm text-neutral-700">{product.description}</p>
+        <p className="mt-1 line-clamp-2 text-sm text-neutral-700">
+          {typeof product.description === 'string' ? product.description : 'Beautiful gift item'}
+        </p>
 
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-neutral-900">${product.price.toFixed(2)}</span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-neutral-900">
+                ${product.price.toFixed(2)}
+              </span>
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <span className="text-sm text-neutral-500 line-through">
+                  ${product.compareAtPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <span className="text-xs text-rose-600">
+                Save ${(product.compareAtPrice - product.price).toFixed(2)}
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <Button
@@ -209,11 +240,15 @@ export function FeaturedProducts() {
         </FadeInWhenVisible>
 
         <FadeInWhenVisible className="relative w-full">
-          {error && <p className="mb-4 text-center text-red-500">{error}</p>}
+          {error && (
+            <p className="mb-4 text-center text-red-500">
+              {error instanceof Error ? error.message : 'Failed to load featured products'}
+            </p>
+          )}
 
           <div
             ref={carouselRef}
-            className="scrollbar-hide -mx-4 flex snap-x snap-mandatory space-x-4 overflow-x-auto px-2 pb-8 sm:px-4"
+            className="scrollbar-hide -mx-4 flex snap-x snap-mandatory space-x-4 overflow-x-auto px-2 py-2 pb-8 sm:px-4"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
@@ -240,16 +275,10 @@ export function FeaturedProducts() {
                 featuredProducts.map((product) => renderProductCard(product))}
 
             {/* Duplicate products to demonstrate scrolling */}
-            {!isLoading && featuredProducts.map((product) => renderProductCard(product, true))}
+            {!isLoading &&
+              featuredProducts.length > 6 &&
+              featuredProducts.map((product) => renderProductCard(product, true))}
           </div>
-        </FadeInWhenVisible>
-
-        <FadeInWhenVisible className="mt-6 text-center" delay={0.2}>
-          <Link href="/products">
-            <Button className="bg-rose-700 text-white hover:bg-rose-800 hover:text-white">
-              View All Products
-            </Button>
-          </Link>
         </FadeInWhenVisible>
       </div>
     </section>

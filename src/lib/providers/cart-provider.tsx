@@ -1,76 +1,87 @@
 'use client';
 
-import { PropsWithChildren, createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 
 import { toast } from 'sonner';
 
-import { Product } from '../services/api';
-import { useCartStore } from '../stores/cart-store';
+import { Product } from '@/types/product';
 
-// Create a context to expose cart helper functions
+import { useCartStore, CartItem } from '@/lib/stores/cart-store';
+
+// Create context with shopping cart functionality
 interface CartContextType {
+  items: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateCartItemQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productSlug: string) => void;
+  updateQuantity: (productSlug: string, quantity: number) => void;
   clearCart: () => void;
+  itemCount: number;
+  getItemQuantity: (productSlug: string) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: PropsWithChildren) {
-  // Get cart actions from the store
-  const { addItem, removeItem, updateQuantity, clearCart } = useCartStore();
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
+  // Use the cart store
+  const cartStore = useCartStore();
 
-  // Enhanced add to cart that shows a toast notification
+  // Add item to cart
   const addToCart = (product: Product, quantity = 1) => {
-    // Only passing the product ID to the store instead of the entire product
-    addItem(product.id, quantity);
-    toast.success(`Added to Cart`, {
-      description: `${quantity} × ${product.name}`,
-      action: {
-        label: 'View Cart',
-        onClick: () => {
-          // This could navigate to cart page or open cart drawer
-          console.log('View cart clicked');
-        },
-      },
-    });
+    if (!product || !product.slug || !product.slug.current) {
+      console.error('Failed to add product to cart: Invalid product or missing slug');
+      return;
+    }
+    const slug = product.slug.current;
+    cartStore.addItem(slug, quantity);
+    toast.success(`Added ${quantity} ${product.name} to cart`);
   };
 
-  // Enhanced remove from cart with notification
-  const removeFromCart = (productId: string) => {
-    removeItem(productId);
-    toast.info('Item removed from cart');
+  // Remove item from cart
+  const removeFromCart = (productSlug: string) => {
+    cartStore.removeItem(productSlug);
   };
 
-  // Enhanced update quantity with notification
-  const updateCartItemQuantity = (productId: string, quantity: number) => {
-    updateQuantity(productId, quantity);
-    toast.info('Cart updated');
+  // Update item quantity
+  const updateQuantity = (productSlug: string, quantity: number) => {
+    cartStore.updateQuantity(productSlug, quantity);
   };
 
-  // Enhanced clear cart with confirmation and notification
-  const clearCartWithConfirmation = () => {
-    clearCart();
-    toast.info('Cart cleared');
+  // Get item count - use useMemo to avoid recalculations during renders
+  const itemCount = useMemo(() => cartStore.getTotalItemsCount(), [cartStore]);
+
+  // Get quantity for a specific product
+  const getItemQuantity = (productSlug: string) => {
+    return cartStore.getItemQuantity(productSlug);
   };
 
-  // Value object with enhanced functions
-  const contextValue: CartContextType = {
-    addToCart,
-    removeFromCart,
-    updateCartItemQuantity,
-    clearCart: clearCartWithConfirmation,
+  // Clear the cart
+  const clearCart = () => {
+    cartStore.clearCart();
   };
 
-  return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
-}
+  // Provide cart functionality to components
+  return (
+    <CartContext.Provider
+      value={{
+        items: cartStore.items,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        itemCount,
+        getItemQuantity,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+};
 
 // Custom hook to use the cart context
-export function useCart() {
+export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
     throw new Error('useCart must be used within a CartProvider');
   }
   return context;
-}
+};

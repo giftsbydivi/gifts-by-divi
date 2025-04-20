@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 import Image from 'next/image';
 
@@ -14,8 +14,11 @@ interface ProductGalleryProps {
 }
 
 export function ProductGallery({ media }: ProductGalleryProps) {
+  // Handle case when media is undefined or null
+  const validMedia = media || [];
+
   // Sort media to ensure Instagram videos come last
-  const sortedMedia = [...media].sort((a, b) => {
+  const sortedMedia = [...validMedia].sort((a, b) => {
     if (a.type === 'instagram' && b.type !== 'instagram') return 1;
     if (a.type !== 'instagram' && b.type === 'instagram') return -1;
     return 0;
@@ -30,6 +33,22 @@ export function ProductGallery({ media }: ProductGalleryProps) {
   // State for fullscreen viewer
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fullscreenIndex, setFullscreenIndex] = useState(0);
+
+  // Navigate through images in fullscreen
+  const navigateFullscreen = useCallback(
+    (direction: 'next' | 'prev') => {
+      if (imageOnlyMedia.length <= 1) return;
+
+      setFullscreenIndex((prev) => {
+        if (direction === 'next') {
+          return (prev + 1) % imageOnlyMedia.length;
+        } else {
+          return (prev - 1 + imageOnlyMedia.length) % imageOnlyMedia.length;
+        }
+      });
+    },
+    [imageOnlyMedia]
+  );
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -55,7 +74,7 @@ export function ProductGallery({ media }: ProductGalleryProps) {
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [isFullscreen, fullscreenIndex]);
+  }, [isFullscreen, fullscreenIndex, navigateFullscreen]);
 
   // Open fullscreen viewer
   const openFullscreen = (originalIndex: number) => {
@@ -73,19 +92,6 @@ export function ProductGallery({ media }: ProductGalleryProps) {
   // Close fullscreen viewer
   const closeFullscreen = () => {
     setIsFullscreen(false);
-  };
-
-  // Navigate through images in fullscreen
-  const navigateFullscreen = (direction: 'next' | 'prev') => {
-    if (imageOnlyMedia.length <= 1) return;
-
-    setFullscreenIndex((prev) => {
-      if (direction === 'next') {
-        return (prev + 1) % imageOnlyMedia.length;
-      } else {
-        return (prev - 1 + imageOnlyMedia.length) % imageOnlyMedia.length;
-      }
-    });
   };
 
   // Function to render the appropriate media based on type

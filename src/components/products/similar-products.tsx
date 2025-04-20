@@ -21,7 +21,7 @@ export function SimilarProducts({ currentProductId, category }: SimilarProductsP
   const { data, isLoading, isError } = useProductsByCategory(category);
 
   // Filter out the current product and limit to 3 similar products
-  const similarProducts = data?.filter((product) => product.id !== currentProductId).slice(0, 3);
+  const similarProducts = data?.filter((product) => product._id !== currentProductId).slice(0, 3);
 
   // Don't render anything if there are no similar products
   if (!isLoading && (!similarProducts || similarProducts.length === 0)) {
@@ -53,7 +53,7 @@ export function SimilarProducts({ currentProductId, category }: SimilarProductsP
         {!isLoading && !isError && similarProducts && similarProducts.length > 0 && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
             {similarProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         )}
@@ -67,15 +67,15 @@ function ProductCard({ product }: { product: Product }) {
     <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.2 }}>
       <Card className="relative cursor-pointer overflow-hidden !p-0 transition-shadow hover:shadow-md">
         <Link
-          href={`/products/${product.id}`}
+          href={`/products/${product.slug.current}`}
           className="absolute inset-0 z-10"
           aria-label={`View details for ${product.name}`}
         />
-        <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
-          {product.media && product.media.length > 0 ? (
-            <div className="h-full w-full">
+        <div className="relative h-48 w-full overflow-hidden rounded-t-lg bg-neutral-100">
+          {product.images && product.images.length > 0 ? (
+            <div className="h-full w-full overflow-hidden">
               <img
-                src={product.media[0].url}
+                src={product.images[0].url}
                 alt={product.name}
                 className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
               />
@@ -87,8 +87,8 @@ function ProductCard({ product }: { product: Product }) {
           )}
 
           {/* Featured & Trending badges - top left */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.isFeatured && (
+          <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+            {product.featured && (
               <Badge
                 variant="outline"
                 className="border-blue-200 bg-blue-50/90 text-blue-700 backdrop-blur-sm"
@@ -97,7 +97,7 @@ function ProductCard({ product }: { product: Product }) {
               </Badge>
             )}
 
-            {product.isTrending && (
+            {product.tags?.includes('trending') && (
               <Badge
                 variant="outline"
                 className="border-rose-200 bg-rose-50/90 text-rose-700 backdrop-blur-sm"
@@ -123,13 +123,35 @@ function ProductCard({ product }: { product: Product }) {
         </div>
         <div className="p-4">
           <div className="mb-2">
-            <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
-              {product.category}
-            </Badge>
+            {product.categories && product.categories.length > 0 && (
+              <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">
+                {product.categories[0].name}
+              </Badge>
+            )}
           </div>
           <h3 className="mb-1 font-medium">{product.name}</h3>
-          <p className="mb-2 line-clamp-2 text-sm text-neutral-600">{product.description}</p>
-          <p className="font-semibold text-neutral-900">${product.price.toFixed(2)}</p>
+          <div className="mb-2 line-clamp-2 text-sm text-neutral-600">
+            {typeof product.description === 'string' ? (
+              <p>{product.description}</p>
+            ) : (
+              <p>Beautiful gift item</p>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-neutral-900">${product.price.toFixed(2)}</p>
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <span className="text-xs text-neutral-500 line-through">
+                  ${product.compareAtPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <span className="text-xs text-rose-600">
+                Save ${(product.compareAtPrice - product.price).toFixed(2)}
+              </span>
+            )}
+          </div>
         </div>
       </Card>
     </motion.div>

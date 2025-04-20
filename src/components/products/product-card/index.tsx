@@ -23,49 +23,51 @@ export function ProductCard({ product }: ProductCardProps) {
     <motion.div variants={childVariants}>
       <div className="group relative cursor-pointer overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg">
         <Link
-          href={`/products/${product.id}`}
+          href={`/products/${product.slug.current}`}
           className="absolute inset-0 z-10"
           aria-label={`View details for ${product.name}`}
         />
         {/* Product Image */}
-        <div className="relative h-64 w-full overflow-hidden bg-neutral-100">
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-            {product.media[0] ? (
-              <div className="relative h-full w-full transition-transform duration-500 group-hover:scale-110">
-                {product.media[0].type === 'image' ? (
-                  <Image
-                    src={product.media[0].url}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : product.media[0].type === 'video' && product.media[0].thumbnail ? (
-                  <Image
-                    src={product.media[0].thumbnail}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
+        <div className="relative h-64 w-full overflow-hidden rounded-t-lg bg-neutral-100">
+          {product.images && product.images.length > 0 ? (
+            <div className="h-full w-full overflow-hidden">
+              {product.images[0].type === 'image' ? (
+                <Image
+                  src={product.images[0].url}
+                  alt={product.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              ) : product.images[0].type === 'video' && product.images[0].thumbnail ? (
+                <Image
+                  src={product.images[0].thumbnail}
+                  alt={product.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
                   <p className="text-neutral-400">No image available</p>
-                )}
-              </div>
-            ) : (
-              <div className="transition-transform duration-500 group-hover:scale-110">
-                <p className="text-neutral-400">Product Image</p>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <p className="text-neutral-400">Product Image</p>
+            </div>
+          )}
           {/* Category badge - top right */}
-          <div className="absolute top-3 right-3">
-            <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
-              {product.category}
-            </Badge>
+          <div className="absolute top-3 right-3 z-20">
+            {product.categories && product.categories.length > 0 && (
+              <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
+                {product.categories[0].name}
+              </Badge>
+            )}
           </div>
 
           {/* Featured & Trending badges - top left */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.isFeatured && (
+          <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+            {product.featured && (
               <Badge
                 variant="outline"
                 className="border-blue-200 bg-blue-50/90 text-blue-700 backdrop-blur-sm"
@@ -74,7 +76,7 @@ export function ProductCard({ product }: ProductCardProps) {
               </Badge>
             )}
 
-            {product.isTrending && (
+            {product.tags?.includes('trending') && (
               <Badge
                 variant="outline"
                 className="border-rose-200 bg-rose-50/90 text-rose-700 backdrop-blur-sm"
@@ -98,10 +100,10 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {product.media.length > 1 && (
-            <div className="absolute right-3 bottom-3">
+          {product.images && product.images.length > 1 && (
+            <div className="absolute right-3 bottom-3 z-20">
               <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
-                +{product.media.length - 1} more
+                +{product.images.length - 1} more
               </Badge>
             </div>
           )}
@@ -112,10 +114,28 @@ export function ProductCard({ product }: ProductCardProps) {
           <h3 className="mb-1 text-lg font-semibold tracking-tight text-neutral-900">
             {product.name}
           </h3>
-          <p className="mb-4 line-clamp-2 text-sm text-neutral-700">{product.description}</p>
+          <p className="mb-4 line-clamp-2 text-sm text-neutral-700">
+            {typeof product.description === 'string' ? product.description : 'Beautiful gift item'}
+          </p>
 
           <div className="flex items-center justify-between">
-            <span className="text-xl font-bold text-neutral-900">${product.price.toFixed(2)}</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold text-neutral-900">
+                  ${product.price.toFixed(2)}
+                </span>
+                {product.compareAtPrice && product.compareAtPrice > product.price && (
+                  <span className="text-sm text-neutral-500 line-through">
+                    ${product.compareAtPrice.toFixed(2)}
+                  </span>
+                )}
+              </div>
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <span className="text-xs text-rose-600">
+                  Save ${(product.compareAtPrice - product.price).toFixed(2)}
+                </span>
+              )}
+            </div>
 
             <div className="flex items-center gap-2">
               <Button

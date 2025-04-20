@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 import Link from 'next/link';
 
+import { useCartProducts } from '@/lib/hooks/use-products';
 import { useCart } from '@/lib/providers/cart-provider';
-import { api, Product } from '@/lib/services/api';
 import { useCartStore } from '@/lib/stores/cart-store';
 
 import { Button } from '@/components/ui/button';
@@ -13,78 +13,28 @@ import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Interface to combine cart item with product details
-interface CartItemWithProduct {
-  id: string;
-  quantity: number;
-  product: Product | null;
-  isLoading: boolean;
-}
-
 export default function CartPage() {
   // Get cart state from Zustand store
-  const { items, totalItems } = useCartStore();
-  const [cartItemsWithProducts, setCartItemsWithProducts] = useState<CartItemWithProduct[]>([]);
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const { items } = useCartStore();
 
   // Get cart actions from context
-  const { updateCartItemQuantity, removeFromCart, clearCart } = useCart();
+  const { updateQuantity, removeFromCart, clearCart } = useCart();
 
-  // Fetch product details for each cart item
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      setIsLoading(true);
+  // Calculate total items once, not during render
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
-      // Create a placeholder array with loading state for each item
-      const initialItemsWithProducts: CartItemWithProduct[] = items.map((item) => ({
-        id: item.productId,
-        quantity: item.quantity,
-        product: null,
-        isLoading: true,
-      }));
+  // Use the hook to fetch cart products with caching
+  const { data: cartItemsWithProducts = [], isLoading } = useCartProducts(items);
 
-      setCartItemsWithProducts(initialItemsWithProducts);
-
-      // Fetch details for each product
-      const updatedItems = await Promise.all(
-        items.map(async (item): Promise<CartItemWithProduct> => {
-          try {
-            const product = await api.getProduct(item.productId);
-            return {
-              id: item.productId,
-              quantity: item.quantity,
-              product: product || null,
-              isLoading: false,
-            };
-          } catch (error) {
-            console.error(`Error fetching product ${item.productId}:`, error);
-            return {
-              id: item.productId,
-              quantity: item.quantity,
-              product: null,
-              isLoading: false,
-            };
-          }
-        })
-      );
-
-      setCartItemsWithProducts(updatedItems);
-
-      // Calculate total price
-      const total = updatedItems.reduce((sum, item) => {
-        if (item.product) {
-          return sum + item.product.price * item.quantity;
-        }
-        return sum;
-      }, 0);
-
-      setTotalPrice(total);
-      setIsLoading(false);
-    };
-
-    fetchProductDetails();
-  }, [items]);
+  // Calculate total price
+  const totalPrice = useMemo(() => {
+    return cartItemsWithProducts.reduce((sum, item) => {
+      if (item.product) {
+        return sum + item.product.price * item.quantity;
+      }
+      return sum;
+    }, 0);
+  }, [cartItemsWithProducts]);
 
   return (
     <main className="min-h-screen p-8">
@@ -124,10 +74,10 @@ export default function CartPage() {
 
             <div className="mb-8 space-y-4">
               {cartItemsWithProducts.map((item) => (
-                <Card key={item.id} className="group relative cursor-pointer overflow-hidden">
+                <Card key={item.slug} className="group relative cursor-pointer overflow-hidden">
                   {item.product && (
                     <Link
-                      href={`/products/${item.id}`}
+                      href={`/products/${item.product.slug.current}`}
                       className="absolute inset-0 z-10"
                       aria-label={`View details for ${item.product.name}`}
                     />
@@ -137,10 +87,12 @@ export default function CartPage() {
                       <div className="flex h-24 w-full items-center justify-center sm:h-full">
                         {item.isLoading ? (
                           <Skeleton className="h-24 w-24 sm:h-32 sm:w-32" />
-                        ) : item.product && item.product.media && item.product.media.length > 0 ? (
+                        ) : item.product &&
+                          item.product.images &&
+                          item.product.images.length > 0 ? (
                           <div className="relative h-24 w-24 overflow-hidden sm:h-32 sm:w-32">
                             <img
-                              src={item.product.media[0].url}
+                              src={item.product.images[0].url}
                               alt={item.product.name}
                               className="h-full w-full object-contain"
                             />
@@ -161,7 +113,17 @@ export default function CartPage() {
                           ) : item.product ? (
                             <>
                               <h3 className="text-lg font-medium">{item.product.name}</h3>
-                              <p className="text-sm text-neutral-600">{item.product.category}</p>
+                              <p className="text-sm text-neutral-600">
+                                {item.product.categories && item.product.categories.length > 0
+                                  ? item.product.categories[0].name
+                                  : 'Uncategorized'}
+                              </p>
+                              {item.product.compareAtPrice && (
+                                <p className="text-xs text-rose-600">
+                                  Save $
+                                  {(item.product.compareAtPrice - item.product.price).toFixed(2)}
+                                </p>
+                              )}
                             </>
                           ) : (
                             <p className="text-red-500">Product not available</p>
@@ -175,7 +137,7 @@ export default function CartPage() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                updateCartItemQuantity(item.id, item.quantity - 1);
+                                updateQuantity(item.slug, Math.max(1, item.quantity - 1));
                               }}
                               className="h-8 w-8 rounded-r-none"
                               disabled={item.quantity <= 1 || item.isLoading || !item.product}
@@ -191,7 +153,7 @@ export default function CartPage() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                updateCartItemQuantity(item.id, item.quantity + 1);
+                                updateQuantity(item.slug, item.quantity + 1);
                               }}
                               className="h-8 w-8 rounded-l-none"
                               disabled={item.isLoading || !item.product}
@@ -221,7 +183,7 @@ export default function CartPage() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              removeFromCart(item.id);
+                              removeFromCart(item.slug);
                             }}
                             className="relative z-20 text-red-600 hover:bg-red-50 hover:text-red-700"
                             disabled={item.isLoading}
@@ -236,40 +198,29 @@ export default function CartPage() {
               ))}
             </div>
 
-            <div className="rounded-lg bg-rose-50/50 p-6">
-              <div className="mb-2 flex justify-between">
-                <span>Subtotal</span>
-                {isLoading ? (
-                  <Skeleton className="h-5 w-16" />
-                ) : (
+            {!isLoading && (
+              <div className="border-t border-neutral-200 pt-4">
+                <div className="flex items-center justify-between py-2">
+                  <span className="font-medium">Subtotal:</span>
+                  <span className="font-medium">${totalPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between py-2 text-sm text-neutral-500">
+                  <span>Shipping:</span>
+                  <span>Calculated at checkout</span>
+                </div>
+                <div className="flex items-center justify-between py-4 text-lg font-bold">
+                  <span>Total:</span>
                   <span>${totalPrice.toFixed(2)}</span>
-                )}
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <Link href="/checkout">
+                    <Button size="lg" className="bg-rose-700 px-8 text-white hover:bg-rose-800">
+                      Checkout
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <div className="mb-2 flex justify-between text-sm text-neutral-700">
-                <span>Shipping</span>
-                <span>Calculated at checkout</span>
-              </div>
-              <div className="mb-2 flex justify-between text-sm text-neutral-700">
-                <span>Tax</span>
-                <span>Calculated at checkout</span>
-              </div>
-              <Separator className="my-4" />
-              <div className="mb-6 flex justify-between">
-                <span className="text-lg font-medium">Total</span>
-                {isLoading ? (
-                  <Skeleton className="h-6 w-20" />
-                ) : (
-                  <span className="text-lg font-medium">${totalPrice.toFixed(2)}</span>
-                )}
-              </div>
-              <Button
-                className="w-full bg-rose-700 text-white hover:bg-rose-800"
-                size="lg"
-                disabled={isLoading}
-              >
-                Proceed to Checkout
-              </Button>
-            </div>
+            )}
           </>
         )}
       </div>
