@@ -6,6 +6,8 @@ import Link from 'next/link';
 
 import { User, Package, LogOut, ExternalLink } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+
 // Define order status types and their properties
 interface StatusConfig {
   color: string;
@@ -201,13 +203,14 @@ export default function OrdersPage() {
                 <span>Orders</span>
               </Link>
 
-              <button
-                className="flex items-center gap-3 px-4 py-3 text-neutral-700 hover:bg-neutral-50 hover:text-rose-700"
+              <Button
+                variant="ghost"
+                className="flex w-full items-center justify-start gap-3 px-4 py-3 text-neutral-700 hover:bg-neutral-50 hover:text-rose-700"
                 onClick={() => alert('Logout functionality will be implemented with actual auth')}
               >
                 <LogOut size={18} />
                 <span>Logout</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -222,9 +225,7 @@ export default function OrdersPage() {
               <h3 className="mb-1 text-lg font-medium">No orders yet</h3>
               <p className="mb-4 text-neutral-600">You haven&apos;t placed any orders yet.</p>
               <Link href="/products">
-                <button className="rounded-md bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-800">
-                  Start Shopping
-                </button>
+                <Button className="bg-rose-700 text-white hover:bg-rose-800">Start Shopping</Button>
               </Link>
             </div>
           ) : (

@@ -197,9 +197,11 @@ export function FeaturedProducts() {
             </h2>
 
             <div className="absolute top-1/2 right-4 hidden -translate-y-1/2 items-center gap-2 md:flex">
-              <button
+              <Button
                 onClick={() => scrollCarousel('left')}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50"
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 rounded-full border-neutral-200 bg-white text-neutral-700 shadow-sm hover:bg-neutral-50"
                 aria-label="Scroll left"
                 disabled={isLoading}
               >
@@ -215,10 +217,12 @@ export function FeaturedProducts() {
                     clipRule="evenodd"
                   />
                 </svg>
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => scrollCarousel('right')}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50"
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 rounded-full border-neutral-200 bg-white text-neutral-700 shadow-sm hover:bg-neutral-50"
                 aria-label="Scroll right"
                 disabled={isLoading}
               >
@@ -234,7 +238,7 @@ export function FeaturedProducts() {
                     clipRule="evenodd"
                   />
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
         </FadeInWhenVisible>

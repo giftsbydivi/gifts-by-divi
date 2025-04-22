@@ -9,6 +9,8 @@ import { Maximize2 } from 'lucide-react';
 
 import { MediaItem } from '@/lib/services/api';
 
+import { Button } from '@/components/ui/button';
+
 interface ProductGalleryProps {
   media: MediaItem[];
 }
@@ -115,16 +117,18 @@ export function ProductGallery({ media }: ProductGalleryProps) {
               priority
             />
             {!isInFullscreen && (
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   openFullscreen(sortedMedia.indexOf(item));
                 }}
-                className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-lg transition-all hover:scale-110 hover:bg-white"
+                variant="outline"
+                size="icon"
+                className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 text-neutral-700 shadow-lg hover:scale-110 hover:bg-white"
                 aria-label="View fullscreen"
               >
                 <Maximize2 className="h-4 w-4" />
-              </button>
+              </Button>
             )}
           </div>
         );
@@ -307,9 +311,11 @@ function FullscreenViewer({
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking this container
           >
             {/* Close button */}
-            <button
+            <Button
               onClick={onClose}
-              className="absolute -top-4 -right-4 z-10 rounded-full bg-white p-2 text-black shadow-md transition-transform hover:scale-110"
+              variant="outline"
+              size="icon"
+              className="absolute -top-4 -right-4 z-10 rounded-full bg-white p-2 text-black shadow-md hover:scale-110"
               aria-label="Close fullscreen view"
             >
               <svg
@@ -325,7 +331,7 @@ function FullscreenViewer({
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
-            </button>
+            </Button>
 
             {/* Image Container */}
             <div className="relative h-[80vh] w-[80vw] max-w-5xl overflow-hidden rounded-lg">
@@ -347,12 +353,14 @@ function FullscreenViewer({
             {/* Navigation Arrows */}
             {media.length > 1 && (
               <>
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     onNavigate('prev');
                   }}
-                  className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/80 p-3 text-neutral-800 shadow-md transition hover:scale-110 hover:bg-white"
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/80 p-3 text-neutral-800 shadow-md hover:scale-110 hover:bg-white"
                   aria-label="Previous image"
                 >
                   <svg
@@ -367,14 +375,16 @@ function FullscreenViewer({
                   >
                     <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
-                </button>
+                </Button>
 
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     onNavigate('next');
                   }}
-                  className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/80 p-3 text-neutral-800 shadow-md transition hover:scale-110 hover:bg-white"
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/80 p-3 text-neutral-800 shadow-md hover:scale-110 hover:bg-white"
                   aria-label="Next image"
                 >
                   <svg
@@ -389,7 +399,7 @@ function FullscreenViewer({
                   >
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
-                </button>
+                </Button>
               </>
             )}
 
@@ -397,13 +407,15 @@ function FullscreenViewer({
             {media.length > 1 && (
               <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center justify-center gap-1.5">
                 {media.map((_, index) => (
-                  <button
+                  <Button
                     key={index}
                     onClick={(e) => {
                       e.stopPropagation();
                       onNavigate(index > currentIndex ? 'next' : 'prev');
                     }}
-                    className={`h-1.5 rounded-full transition-all ${
+                    variant="ghost"
+                    size="icon"
+                    className={`h-1.5 min-w-0 rounded-full p-0 ${
                       index === currentIndex ? 'w-6 bg-white' : 'w-3 bg-white/50 hover:bg-white/70'
                     }`}
                     aria-label={`Go to image ${index + 1}`}

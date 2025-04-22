@@ -16,6 +16,8 @@ import {
   X,
 } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+
 // Define types for order data
 interface OrderItem {
   name: string;
@@ -300,9 +302,7 @@ export default function OrderDetailPage() {
             The order you&apos;re looking for could not be found.
           </p>
           <Link href="/account/orders">
-            <button className="rounded-md bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-800">
-              Back to Orders
-            </button>
+            <Button className="bg-rose-700 text-white hover:bg-rose-800">Back to Orders</Button>
           </Link>
         </div>
       </div>
@@ -402,13 +402,14 @@ export default function OrderDetailPage() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex items-center gap-2">
-        <button
+        <Button
           onClick={() => router.push('/account/orders')}
-          className="flex items-center gap-1 text-neutral-600 hover:text-rose-700"
+          variant="ghost"
+          className="flex h-auto items-center gap-1 p-0 text-neutral-600 hover:text-rose-700"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Orders</span>
-        </button>
+        </Button>
       </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
