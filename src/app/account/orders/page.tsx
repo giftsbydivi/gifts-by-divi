@@ -61,6 +61,7 @@ const orders = [
     id: '#ORD-2023-1234',
     date: 'June 15, 2023',
     status: 'Delivered',
+    paymentStatus: 'Paid',
     total: '₹4,250.00',
     items: [
       {
@@ -83,6 +84,7 @@ const orders = [
     id: '#ORD-2023-0987',
     date: 'May 28, 2023',
     status: 'Shipped',
+    paymentStatus: 'Paid',
     total: '₹1,800.00',
     items: [
       {
@@ -98,6 +100,7 @@ const orders = [
     id: '#ORD-2023-0456',
     date: 'April 10, 2023',
     status: 'Cancelled',
+    paymentStatus: 'Refunded',
     total: '₹3,250.00',
     items: [
       {
@@ -120,6 +123,7 @@ const orders = [
     id: '#ORD-2023-3456',
     date: 'June 20, 2023',
     status: 'Order Placed',
+    paymentStatus: 'Pending',
     total: '₹2,100.00',
     items: [
       {
@@ -135,6 +139,7 @@ const orders = [
     id: '#ORD-2023-5678',
     date: 'June 18, 2023',
     status: 'Payment Confirmed',
+    paymentStatus: 'Paid',
     total: '₹3,450.00',
     items: [
       {
@@ -157,6 +162,7 @@ const orders = [
     id: '#ORD-2023-7890',
     date: 'June 16, 2023',
     status: 'Processing',
+    paymentStatus: 'Paid',
     total: '₹5,200.00',
     items: [
       {
@@ -245,6 +251,14 @@ export default function OrdersPage() {
                         >
                           {order.status}
                         </span>
+                        {order.paymentStatus === 'Pending' && (
+                          <span
+                            className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                            title="Payment is pending for this order"
+                          >
+                            Payment Pending
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-neutral-500">{order.date}</p>
                     </div>

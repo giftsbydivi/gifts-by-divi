@@ -40,6 +40,7 @@ interface Order {
   status: OrderStatusType;
   total: string;
   paymentMethod: 'UPI' | 'Cash on Delivery';
+  paymentStatus: 'Pending' | 'Paid' | 'Refunded';
   shippingAddress: string;
   trackingNumber: string;
   items: OrderItem[];
@@ -110,6 +111,7 @@ const allOrders: Record<string, Order> = {
     status: 'Delivered',
     total: '₹4,250.00',
     paymentMethod: 'UPI',
+    paymentStatus: 'Paid',
     shippingAddress: '123 Main Street, Apartment 4B, Mumbai, Maharashtra 400001',
     trackingNumber: 'TRK5678901234',
     items: [
@@ -144,6 +146,7 @@ const allOrders: Record<string, Order> = {
     status: 'Shipped',
     total: '₹1,800.00',
     paymentMethod: 'Cash on Delivery',
+    paymentStatus: 'Paid',
     shippingAddress: '456 Park Avenue, Delhi, Delhi 110001',
     trackingNumber: 'TRK9876543210',
     items: [
@@ -169,6 +172,7 @@ const allOrders: Record<string, Order> = {
     status: 'Cancelled',
     total: '₹3,250.00',
     paymentMethod: 'UPI',
+    paymentStatus: 'Refunded',
     shippingAddress: '789 Garden Street, Bangalore, Karnataka 560001',
     trackingNumber: 'N/A',
     items: [
@@ -206,6 +210,7 @@ const allOrders: Record<string, Order> = {
     status: 'Order Placed',
     total: '₹2,100.00',
     paymentMethod: 'Cash on Delivery',
+    paymentStatus: 'Pending',
     shippingAddress: '101 River Road, Chennai, Tamil Nadu 600001',
     trackingNumber: 'Not Available Yet',
     items: [
@@ -226,6 +231,7 @@ const allOrders: Record<string, Order> = {
     status: 'Payment Confirmed',
     total: '₹3,450.00',
     paymentMethod: 'UPI',
+    paymentStatus: 'Paid',
     shippingAddress: '202 Hill Avenue, Kolkata, West Bengal 700001',
     trackingNumber: 'Not Available Yet',
     items: [
@@ -257,6 +263,7 @@ const allOrders: Record<string, Order> = {
     status: 'Processing',
     total: '₹5,200.00',
     paymentMethod: 'Cash on Delivery',
+    paymentStatus: 'Paid',
     shippingAddress: '303 Lake View Road, Hyderabad, Telangana 500001',
     trackingNumber: 'Not Available Yet',
     items: [
@@ -400,7 +407,7 @@ export default function OrderDetailPage() {
   };
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
+    <main className="container mx-auto max-w-4xl px-4 py-8 md:py-12">
       <div className="mb-6 flex items-center gap-2">
         <Button
           onClick={() => router.push('/account/orders')}
@@ -412,10 +419,22 @@ export default function OrderDetailPage() {
         </Button>
       </div>
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Order Details {order.id}</h1>
-
+      <div className="mb-8 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center sm:gap-4">
         <div>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <h1 className="mr-1 text-2xl font-bold">Order {order.id}</h1>
+            <div className="mt-1 flex flex-wrap gap-2 sm:mt-0">
+              {order.paymentStatus === 'Pending' && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                  Payment Pending
+                </span>
+              )}
+            </div>
+          </div>
+          <p className="text-neutral-500">Placed on {order.date}</p>
+        </div>
+
+        <div className="mt-3 sm:mt-0">
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${orderStatusConfig[order.status].color}`}
           >
@@ -431,6 +450,83 @@ export default function OrderDetailPage() {
           </span>
         </div>
       </div>
+
+      {/* Payment Instructions for Pending Orders */}
+      {order.paymentStatus === 'Pending' && (
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-5 shadow-sm">
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-amber-800">
+            <CreditCard className="h-5 w-5" />
+            Payment Instructions
+          </h2>
+
+          <div className="space-y-4">
+            <p className="text-amber-800">
+              Your order has been placed successfully, but payment is pending. Please complete the
+              payment to process your order.
+            </p>
+
+            <div className="rounded-lg border border-amber-200 bg-white p-4">
+              <div className="flex flex-col space-y-2 text-center">
+                <p className="font-medium text-neutral-700">UPI ID:</p>
+                <p className="text-lg font-bold text-rose-700">giftshop@upi</p>
+
+                <div className="mx-auto mt-2 h-40 w-40 overflow-hidden rounded-md border border-amber-200 bg-white p-2">
+                  <img
+                    src="/images/upi-qr-code.png"
+                    alt="UPI QR Code"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  const message = `Hi, I've placed an order with Order ID: ${order.id}. Here's my payment receipt.`;
+                  window.open(
+                    `https://wa.me/919876543210?text=${encodeURIComponent(message)}`,
+                    '_blank'
+                  );
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="white"
+                  className="mr-2 h-5 w-5"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M17.415 14.382C17.117 14.233 15.656 13.515 15.384 13.415C15.112 13.316 14.914 13.267 14.715 13.565C14.517 13.861 13.948 14.531 13.775 14.729C13.601 14.928 13.428 14.952 13.131 14.804C12.834 14.654 11.876 14.341 10.741 13.329C9.858 12.541 9.261 11.568 9.088 11.27C8.915 10.973 9.069 10.812 9.218 10.664C9.352 10.531 9.517 10.317 9.666 10.144C9.814 9.97 9.863 9.846 9.963 9.647C10.062 9.448 10.012 9.275 9.938 9.126C9.863 8.978 9.268 7.515 9.02 6.92C8.779 6.341 8.534 6.419 8.35 6.41C8.166 6.403 7.967 6.4 7.769 6.4C7.57 6.4 7.248 6.474 6.976 6.772C6.704 7.07 5.936 7.788 5.936 9.251C5.936 10.714 7.001 12.127 7.149 12.325C7.297 12.524 9.26 15.521 12.239 16.818C12.949 17.122 13.504 17.301 13.935 17.437C14.65 17.659 15.294 17.627 15.801 17.549C16.365 17.464 17.551 16.837 17.801 16.143C18.051 15.448 18.051 14.853 17.976 14.729C17.901 14.605 17.713 14.531 17.415 14.382V14.382Z"
+                  />
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M2.05195 21.9501L3.31895 16.7571C2.54595 15.1081 2.13895 13.2871 2.13995 11.4341C2.14295 6.22306 6.38095 2.00006 11.608 2.00006C14.122 2.00106 16.481 2.98706 18.282 4.78906C20.083 6.59106 21.069 8.94706 21.068 11.4531C21.065 16.6641 16.827 20.8871 11.608 20.8871H11.604C9.83695 20.8861 8.10095 20.5041 6.55295 19.7861L2.05195 21.9501Z"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Send Receipt on WhatsApp
+              </Button>
+            </div>
+
+            <div className="rounded-lg border border-rose-100 bg-rose-50 p-3 text-sm">
+              <p className="font-medium text-rose-700">
+                Note: Your order will be processed once payment is confirmed. If you have any
+                questions, please contact us.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-[1fr_300px]">
         {/* Main order info */}
