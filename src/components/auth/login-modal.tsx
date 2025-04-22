@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, AlertCircle } from 'lucide-react';
+import { X } from 'lucide-react';
+import { z } from 'zod';
 
 import { User } from '@/lib/stores/auth-store';
 
-import { OtpInput } from '@/components/auth/otp-input';
+import { OtpStep } from '@/components/auth/otp-step';
+import { PhoneStep, PhoneFormValues } from '@/components/auth/phone-step';
+import { RegisterStep, RegisterFormValues } from '@/components/auth/register-step';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 type Step = 'phone' | 'otp' | 'register';
 
@@ -20,156 +21,151 @@ interface LoginModalProps {
   onLogin: (user: User) => void;
 }
 
+// Define schemas for validation in auto-submit case
+const otpSchema = z.object({
+  otp: z.string().regex(/^[0-9]{6}$/, { message: 'Please enter a valid 6-digit OTP' }),
+});
+
 export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
   const [step, setStep] = useState<Step>('phone');
-  const [phone, setPhone] = useState('');
-  const [phoneError, setPhoneError] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [name, setName] = useState('');
-  const [nameError, setNameError] = useState('');
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isPending, startTransition] = useTransition();
+  const [resendTimer, setResendTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+  const [registerError, setRegisterError] = useState<string | undefined>();
 
   // Reset form state when modal is closed
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         setStep('phone');
-        setPhone('');
-        setPhoneError('');
-        setOtp('');
-        setOtpError('');
-        setName('');
-        setNameError('');
-        setEmail('');
-        setEmailError('');
+        setPhoneNumber('');
+        setResendTimer(60);
+        setCanResend(false);
+        setRegisterError(undefined);
       }, 300);
     }
   }, [isOpen]);
 
-  // Validate phone number - must be 10 digits only
-  const validatePhone = (): boolean => {
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phone)) {
-      setPhoneError('Please enter a valid 10-digit phone number');
-      return false;
+  // Start resend timer when OTP step is activated
+  useEffect(() => {
+    if (step === 'otp') {
+      startResendTimer();
     }
-    setPhoneError('');
-    return true;
-  };
+  }, [step]);
 
-  // Validate OTP - must be 6 digits only
-  const validateOtp = (): boolean => {
-    const otpRegex = /^[0-9]{6}$/;
-    if (!otpRegex.test(otp)) {
-      setOtpError('Please enter a valid 6-digit OTP');
-      return false;
-    }
-    setOtpError('');
-    return true;
-  };
+  // Function to start the resend timer
+  const startResendTimer = () => {
+    setCanResend(false);
+    setResendTimer(60);
 
-  // Validate name - 2 to 50 characters, letters, spaces and basic punctuation
-  const validateName = (): boolean => {
-    const nameRegex = /^[A-Za-z\s.'-]{2,50}$/;
-    if (!nameRegex.test(name)) {
-      setNameError('Please enter a valid name (2-50 characters)');
-      return false;
-    }
-    setNameError('');
-    return true;
-  };
+    const timer = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  // Validate email
-  const validateEmail = (): boolean => {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address');
-      return false;
-    }
-    setEmailError('');
-    return true;
+    // Cleanup the timer
+    return () => clearInterval(timer);
   };
 
   if (!isOpen) return null;
 
-  const handlePhoneSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validatePhone()) return;
-
-    setIsLoading(true);
-
-    // In a real implementation, this is where you would call your API to send an OTP
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep('otp');
-    }, 1000);
+  // Handle phone step submission
+  const handlePhoneSubmit = (data: PhoneFormValues) => {
+    startTransition(async () => {
+      try {
+        // In a real implementation, this is where you would call your API to send an OTP
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setPhoneNumber(data.phone);
+        setStep('otp');
+      } catch {
+        // Error handling is done in the component
+      }
+    });
   };
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Handle OTP step submission
+  const handleOtpSubmit = () => {
+    startTransition(async () => {
+      try {
+        // In a real implementation, this is where you would verify the OTP
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    if (!validateOtp()) return;
+        // Check if user is new (this would be determined by your API)
+        const isNewUser = true; // For demo purposes
 
-    setIsLoading(true);
+        if (isNewUser) {
+          setStep('register');
+        } else {
+          // For existing users, we'd typically get their info from the API
+          onLogin({
+            id: '123',
+            name: 'Existing User',
+            email: 'user@example.com',
+            phone: phoneNumber,
+          });
+          onClose();
+        }
+      } catch {
+        // Error handling is done in the component
+      }
+    });
+  };
 
-    // In a real implementation, this is where you would verify the OTP
-    // For demo purposes, we're simulating a new user flow
-    setTimeout(() => {
-      setIsLoading(false);
+  // Handle resend OTP
+  const handleResendOtp = () => {
+    if (!canResend) return;
 
-      // Check if user is new (this would be determined by your API)
-      const isNewUser = true; // For demo purposes
+    startTransition(async () => {
+      try {
+        // In a real implementation, this would trigger a new OTP send
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        startResendTimer();
+      } catch {
+        // Error handling is done in the component
+      }
+    });
+  };
 
-      if (isNewUser) {
-        setStep('register');
-      } else {
-        // For existing users, we'd typically get their info from the API
+  // Handle registration step submission
+  const handleRegisterSubmit = (data: RegisterFormValues) => {
+    startTransition(async () => {
+      try {
+        // In a real implementation, this is where you would save the user's info
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         onLogin({
           id: '123',
-          name: 'Existing User',
-          email: 'user@example.com',
-          phone: phone,
+          name: data.name,
+          email: data.email,
+          phone: phoneNumber,
+          isNewUser: true,
         });
         onClose();
+      } catch {
+        setRegisterError('Failed to complete registration. Please try again.');
       }
-    }, 1000);
+    });
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Handle OTP auto-submission
+  const handleOtpChange = (value: string) => {
+    // Auto-submit when all 6 digits are entered
+    if (value.length === 6 && !isPending) {
+      const isValid = otpSchema.safeParse({ otp: value }).success;
 
-    // Validate all registration fields
-    const isNameValid = validateName();
-    const isEmailValid = validateEmail();
-
-    if (!isNameValid || !isEmailValid) return;
-
-    setIsLoading(true);
-
-    // In a real implementation, this is where you would save the user's info
-    setTimeout(() => {
-      setIsLoading(false);
-      onLogin({
-        id: '123',
-        name,
-        email,
-        phone,
-        isNewUser: true,
-      });
-      onClose();
-    }, 1000);
-  };
-
-  // Handle input changes with real-time validation
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
-    setPhone(value);
-    if (phoneError && value.length === 10) {
-      validatePhone();
+      if (isValid) {
+        // Use setTimeout to ensure the state is updated before submitting
+        setTimeout(() => {
+          handleOtpSubmit();
+        }, 100);
+      }
     }
   };
 
@@ -241,174 +237,28 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
             <div className="relative min-h-[250px]">
               <AnimatePresence mode="wait">
                 {step === 'phone' && (
-                  <motion.div
-                    key="phone-form"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-full"
-                  >
-                    <form onSubmit={handlePhoneSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="Enter your 10-digit phone number"
-                          value={phone}
-                          onChange={handlePhoneChange}
-                          required
-                          className={phoneError ? 'border-red-500' : ''}
-                        />
-                        {phoneError && (
-                          <div className="flex items-center gap-2 text-xs text-red-500">
-                            <AlertCircle className="h-3 w-3" />
-                            <span>{phoneError}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-rose-700 text-white hover:bg-rose-800"
-                        disabled={isLoading || phone.length !== 10}
-                      >
-                        {isLoading ? 'Sending OTP...' : 'Continue'}
-                      </Button>
-                    </form>
-                  </motion.div>
+                  <PhoneStep onSubmit={handlePhoneSubmit} isPending={isPending} />
                 )}
 
                 {step === 'otp' && (
-                  <motion.div
-                    key="otp-form"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-full"
-                  >
-                    <form onSubmit={handleOtpSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="otp">Verification Code</Label>
-                        <OtpInput
-                          value={otp}
-                          onChange={(value) => {
-                            setOtp(value);
-                            if (otpError && value.length === 6) {
-                              validateOtp();
-                            }
-                          }}
-                          disabled={isLoading}
-                        />
-                        {otpError && (
-                          <div className="flex items-center gap-2 text-xs text-red-500">
-                            <AlertCircle className="h-3 w-3" />
-                            <span>{otpError}</span>
-                          </div>
-                        )}
-                        <p className="text-xs text-neutral-500">
-                          OTP sent to {phone}.
-                          <button
-                            type="button"
-                            className="ml-1 text-rose-700 hover:text-rose-800"
-                            onClick={() => setStep('phone')}
-                          >
-                            Change?
-                          </button>
-                        </p>
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-rose-700 text-white hover:bg-rose-800"
-                        disabled={isLoading || otp.length !== 6}
-                      >
-                        {isLoading ? 'Verifying...' : 'Verify OTP'}
-                      </Button>
-
-                      <div className="text-center">
-                        <button
-                          type="button"
-                          className="text-xs text-rose-700 hover:text-rose-800"
-                          onClick={() => {
-                            // In a real implementation, this would trigger a new OTP send
-                            alert('New OTP would be sent in a real implementation');
-                          }}
-                        >
-                          Didn&apos;t receive the code? Resend
-                        </button>
-                      </div>
-                    </form>
-                  </motion.div>
+                  <OtpStep
+                    onSubmit={handleOtpSubmit}
+                    onChangePhone={() => setStep('phone')}
+                    onResendOtp={handleResendOtp}
+                    phoneNumber={phoneNumber}
+                    isPending={isPending}
+                    canResend={canResend}
+                    resendTimer={resendTimer}
+                    onOtpChange={handleOtpChange}
+                  />
                 )}
 
                 {step === 'register' && (
-                  <motion.div
-                    key="register-form"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-full"
-                  >
-                    <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                          id="name"
-                          type="text"
-                          placeholder="Enter your full name"
-                          value={name}
-                          onChange={(e) => {
-                            setName(e.target.value);
-                            if (nameError) validateName();
-                          }}
-                          maxLength={50}
-                          required
-                          className={nameError ? 'border-red-500' : ''}
-                        />
-                        {nameError && (
-                          <div className="flex items-center gap-2 text-xs text-red-500">
-                            <AlertCircle className="h-3 w-3" />
-                            <span>{nameError}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Enter your email address"
-                          value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                            if (emailError) validateEmail();
-                          }}
-                          maxLength={100}
-                          required
-                          className={emailError ? 'border-red-500' : ''}
-                        />
-                        {emailError && (
-                          <div className="flex items-center gap-2 text-xs text-red-500">
-                            <AlertCircle className="h-3 w-3" />
-                            <span>{emailError}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-rose-700 text-white hover:bg-rose-800"
-                        disabled={isLoading || !name || !email}
-                      >
-                        {isLoading ? 'Creating Account...' : 'Complete Registration'}
-                      </Button>
-                    </form>
-                  </motion.div>
+                  <RegisterStep
+                    onSubmit={handleRegisterSubmit}
+                    isPending={isPending}
+                    errorMessage={registerError}
+                  />
                 )}
               </AnimatePresence>
             </div>
