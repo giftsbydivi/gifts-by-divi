@@ -9,6 +9,7 @@ import { ShoppingCart, Menu, X } from 'lucide-react';
 
 import { useCartStore } from '@/lib/stores/cart-store';
 
+import { UserAccountButton } from '@/components/auth/user-account-button';
 import { MiniCart } from '@/components/cart/mini-cart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,9 @@ export function Header() {
         </nav>
 
         <div className="z-10 flex items-center gap-2">
+          {/* User Account Button */}
+          <UserAccountButton onLoginClick={() => setIsMenuOpen(false)} />
+
           {/* Cart Button with Dropdown */}
           <div
             className="relative"
@@ -146,6 +150,13 @@ export function Header() {
               Contact Us
             </Link>
           </nav>
+
+          {/* Account section in mobile menu */}
+          <div className="mt-6 border-t border-neutral-100 pt-4">
+            <div className="flex justify-center">
+              <UserAccountButton onLoginClick={() => setIsMenuOpen(false)} />
+            </div>
+          </div>
 
           <div className="mt-auto space-y-6 pt-10">
             <div className="space-y-2">

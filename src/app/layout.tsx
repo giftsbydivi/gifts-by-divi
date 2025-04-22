@@ -3,6 +3,7 @@ import { Playfair_Display, Montserrat } from 'next/font/google';
 import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 
+import { AuthProvider } from '@/lib/providers/auth-provider';
 import { CartProvider } from '@/lib/providers/cart-provider';
 import { TanstackQueryProvider } from '@/lib/providers/query-provider';
 
@@ -45,23 +46,25 @@ export default function RootLayout({
       <body className={`${playfair.variable} ${montserrat.variable} font-sans antialiased`}>
         <TanstackQueryProvider>
           <CartProvider>
-            <Header />
-            {children}
-            <SiteFooter />
-            <Toaster
-              position="top-right"
-              closeButton
-              theme="light"
-              className="toaster-with-rose-theme"
-              toastOptions={{
-                className: 'toast-with-rose-accent',
-                style: {
-                  background: '#fff',
-                  borderColor: '#fecdd3',
-                  color: '#111',
-                },
-              }}
-            />
+            <AuthProvider>
+              <Header />
+              {children}
+              <SiteFooter />
+              <Toaster
+                position="top-right"
+                closeButton
+                theme="light"
+                className="toaster-with-rose-theme"
+                toastOptions={{
+                  className: 'toast-with-rose-accent',
+                  style: {
+                    background: '#fff',
+                    borderColor: '#fecdd3',
+                    color: '#111',
+                  },
+                }}
+              />
+            </AuthProvider>
           </CartProvider>
         </TanstackQueryProvider>
       </body>
