@@ -48,7 +48,20 @@ export default function RootLayout({
             <Header />
             {children}
             <SiteFooter />
-            <Toaster position="top-right" closeButton />
+            <Toaster
+              position="top-right"
+              closeButton
+              theme="light"
+              className="toaster-with-rose-theme"
+              toastOptions={{
+                className: 'toast-with-rose-accent',
+                style: {
+                  background: '#fff',
+                  borderColor: '#fecdd3',
+                  color: '#111',
+                },
+              }}
+            />
           </CartProvider>
         </TanstackQueryProvider>
       </body>

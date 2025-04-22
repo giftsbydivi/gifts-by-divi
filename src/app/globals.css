@@ -128,3 +128,29 @@
     @apply font-serif tracking-tight;
   }
 }
+
+/* Custom Sonner Toast Styling with Rose Theme */
+.toaster-with-rose-theme [data-sonner-toast] {
+  border-color: #fecdd3 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.toaster-with-rose-theme [data-sonner-toast][data-type='success'] {
+  border-left: 4px solid #be123c !important; /* rose-700 */
+}
+
+.toaster-with-rose-theme [data-sonner-toast][data-type='error'] {
+  border-left: 4px solid #be123c !important; /* rose-700 */
+}
+
+.toaster-with-rose-theme [data-sonner-toast][data-type='success'] [data-icon] {
+  color: #be123c !important; /* rose-700 */
+}
+
+.toaster-with-rose-theme [data-sonner-toast] [data-close-button] {
+  color: #6b7280 !important;
+}
+
+.toaster-with-rose-theme [data-sonner-toast] [data-close-button]:hover {
+  background-color: #f3f4f6 !important;
+}

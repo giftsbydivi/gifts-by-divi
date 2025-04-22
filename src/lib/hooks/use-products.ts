@@ -21,6 +21,7 @@ export const queryKeys = {
   productsByCategory: (category: string) => ['products', 'category', category] as const,
   featuredProducts: ['products', 'featured'] as const,
   cartProducts: (slugs: string[]) => ['products', 'cart', slugs] as const,
+  categories: ['categories'] as const,
 };
 
 // Check if a string looks like a slug (contains only alphanumeric, hyphen, underscore)
@@ -90,5 +91,14 @@ export function useCartProducts(items: CartItem[]) {
         isLoading: results.some((result) => result.isLoading && !result.data),
       };
     },
+  });
+}
+
+// Hook to fetch all categories
+export function useCategories() {
+  return useQuery({
+    queryKey: queryKeys.categories,
+    queryFn: () => api.getCategories(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

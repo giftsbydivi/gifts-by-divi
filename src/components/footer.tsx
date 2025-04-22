@@ -1,8 +1,16 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+
 import { FadeInWhenVisible } from '@/components/animations/fade-in';
 
 export function SiteFooter() {
+  //dont show this for studio route
+  const router = usePathname();
+  if (router.includes('/studio')) {
+    return null;
+  }
+
   return (
     <footer className="w-full border-t border-neutral-200 bg-rose-50/50">
       <div className="container mx-auto px-4 py-12 md:px-8">

@@ -118,12 +118,25 @@ export default function CartPage() {
                                   ? item.product.categories[0].name
                                   : 'Uncategorized'}
                               </p>
-                              {item.product.compareAtPrice && (
-                                <p className="text-xs text-rose-600">
-                                  Save $
-                                  {(item.product.compareAtPrice - item.product.price).toFixed(2)}
-                                </p>
-                              )}
+                              {item.product.compareAtPrice &&
+                                item.product.compareAtPrice > item.product.price && (
+                                  <p className="text-xs text-rose-600">
+                                    Save $
+                                    {(
+                                      item.quantity *
+                                      (item.product.compareAtPrice - item.product.price)
+                                    ).toFixed(2)}
+                                    {item.quantity > 1 && (
+                                      <span className="ml-1 text-neutral-500">
+                                        ($
+                                        {(item.product.compareAtPrice - item.product.price).toFixed(
+                                          2
+                                        )}{' '}
+                                        each)
+                                      </span>
+                                    )}
+                                  </p>
+                                )}
                             </>
                           ) : (
                             <p className="text-red-500">Product not available</p>
@@ -200,18 +213,59 @@ export default function CartPage() {
 
             {!isLoading && (
               <div className="border-t border-neutral-200 pt-4">
-                <div className="flex items-center justify-between py-2">
-                  <span className="font-medium">Subtotal:</span>
-                  <span className="font-medium">${totalPrice.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between py-2 text-sm text-neutral-500">
-                  <span>Shipping:</span>
-                  <span>Calculated at checkout</span>
-                </div>
-                <div className="flex items-center justify-between py-4 text-lg font-bold">
-                  <span>Total:</span>
-                  <span>${totalPrice.toFixed(2)}</span>
-                </div>
+                {/* Calculate MRP (total price without discounts) */}
+                {(() => {
+                  const totalMRP = cartItemsWithProducts.reduce((sum, item) => {
+                    if (item.product) {
+                      const priceToUse =
+                        item.product.compareAtPrice &&
+                        item.product.compareAtPrice > item.product.price
+                          ? item.product.compareAtPrice
+                          : item.product.price;
+                      return sum + priceToUse * item.quantity;
+                    }
+                    return sum;
+                  }, 0);
+
+                  const totalDiscount = cartItemsWithProducts.reduce((sum, item) => {
+                    if (
+                      item.product?.compareAtPrice &&
+                      item.product.compareAtPrice > item.product.price
+                    ) {
+                      return (
+                        sum + (item.product.compareAtPrice - item.product.price) * item.quantity
+                      );
+                    }
+                    return sum;
+                  }, 0);
+
+                  return (
+                    <>
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-neutral-600">Total MRP:</span>
+                        <span className="text-neutral-600">${totalMRP.toFixed(2)}</span>
+                      </div>
+
+                      {totalDiscount > 0 && (
+                        <div className="flex items-center justify-between py-2 text-neutral-600">
+                          <span>Discount on MRP:</span>
+                          <span>- ${totalDiscount.toFixed(2)}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between py-2 text-sm text-neutral-500">
+                        <span>Shipping Fee:</span>
+                        <span>Calculated at checkout</span>
+                      </div>
+
+                      <div className="mt-2 flex items-center justify-between border-t border-neutral-200 py-4 text-lg font-bold">
+                        <span>Total Amount:</span>
+                        <span>${totalPrice.toFixed(2)}</span>
+                      </div>
+                    </>
+                  );
+                })()}
+
                 <div className="mt-6 flex justify-end">
                   <Link href="/checkout">
                     <Button size="lg" className="bg-rose-700 px-8 text-white hover:bg-rose-800">

@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { ShoppingCart, Menu, X } from 'lucide-react';
 
@@ -25,6 +26,12 @@ export function Header() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  //dont show this for studio route
+  const router = usePathname();
+  if (router.includes('/studio')) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b bg-white">
